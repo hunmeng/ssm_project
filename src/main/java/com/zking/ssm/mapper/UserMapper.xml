@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zking.test.mapper.UserMapper">
+    <resultMap id="BaseResultMap" type="com.zking.test.model.User">
+        <constructor>
+            <idArg column="user_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+            <arg column="username" jdbcType="VARCHAR" javaType="java.lang.String"/>
+            <arg column="password" jdbcType="VARCHAR" javaType="java.lang.String"/>
+            <arg column="salt" jdbcType="VARCHAR" javaType="java.lang.String"/>
+            <arg column="locked" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+            <arg column="create_datetime" jdbcType="TIMESTAMP" javaType="java.sql.Timestamp"/>
+        </constructor>
+    </resultMap>
+    <sql id="Base_Column_List">
+    user_id, username, password, salt, locked, create_datetime
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from t_sys_user
+        where user_id = #{userId,jdbcType=BIGINT}
+    </select>
+    <select id="selectByUsername" resultMap="BaseResultMap" parameterType="java.lang.String">
+        select *
+        from t_sys_user
+        where username = #{username,jdbcType=VARCHAR}
+    </select>
+    <select id="listPermissionsByUserName" resultType="string" parameterType="com.zking.test.model.User">
+    select distinct p.permission
+    from t_sys_user u inner join t_sys_user_role ur on u.user_id = ur.user_id inner join t_sys_role r on ur.role_id = r.role_id
+      inner join t_sys_role_permission rp on r.role_id = rp.role_id inner join t_sys_permission p on rp.permission_id = p.permission_id
+    where r.available = 1 and p.available = 1 and u.username = #{username,jdbcType=VARCHAR}
+    </select>
+    <select id="listRolesByUserName" resultType="string" parameterType="com.zking.test.model.User">
+    select distinct r.role_name
+    from t_sys_user u inner join t_sys_user_role ur on u.user_id = ur.user_id inner join t_sys_role r on ur.role_id = r.role_id
+    where r.available = 1 and u.username = #{username,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from t_sys_user
+    where user_id = #{userId,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.zking.test.model.User" useGeneratedKeys="true" keyProperty="userId">
+    insert into t_sys_user (username, password, salt)
+    values (#{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{salt,jdbcType=VARCHAR})
+  </insert>
+    <insert id="insertSelective" parameterType="com.zking.test.model.User">
+        insert into t_sys_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="username != null">
+                username,
+            </if>
+            <if test="password != null">
+                password,
+            </if>
+            <if test="salt != null">
+                salt,
+            </if>
+            <if test="locked != null">
+                locked,
+            </if>
+            <if test="createDatetime != null">
+                create_datetime,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId,jdbcType=BIGINT},
+            </if>
+            <if test="username != null">
+                #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="salt != null">
+                #{salt,jdbcType=VARCHAR},
+            </if>
+            <if test="locked != null">
+                #{locked,jdbcType=INTEGER},
+            </if>
+            <if test="createDatetime != null">
+                #{createDatetime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.zking.test.model.User">
+        update t_sys_user
+        <set>
+            <if test="username != null">
+                username = #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                password = #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="salt != null">
+                salt = #{salt,jdbcType=VARCHAR},
+            </if>
+            <if test="locked != null">
+                locked = #{locked,jdbcType=INTEGER},
+            </if>
+            <if test="createDatetime != null">
+                create_datetime = #{createDatetime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        <choose>
+            <when test="username != null and '' != username">
+                where username = #{username,jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                where user_id = #{userId,jdbcType=BIGINT}
+            </otherwise>
+        </choose>
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.zking.test.model.User">
+    update t_sys_user
+    set username = #{username,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
+      salt = #{salt,jdbcType=VARCHAR},
+      locked = #{locked,jdbcType=INTEGER},
+      create_datetime = #{createDatetime,jdbcType=TIMESTAMP}
+    where user_id = #{userId,jdbcType=BIGINT}
+  </update>
+</mapper>

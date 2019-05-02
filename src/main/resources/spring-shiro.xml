@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+    <description>apache shiro配置</description>
+
+    <!-- 缓存管理器：本章使用Ehcache实现，也可以换成redis等其它缓存技术 -->
+    <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <property name="cacheManagerConfigFile" value="classpath:ehcache.xml"/>
+    </bean>
+
+    <!-- 凭证匹配器 -->
+    <bean id="credentialsMatcher" class="com.zking.test.shiro.RetryLimitHashedCredentialsMatcher" init-method="init">
+        <!--使用有参数构造方法创建对象，注入缓存管理器-->
+        <constructor-arg ref="cacheManager"/>
+
+        <!--指定缓存对象的名字-->
+        <property name="cacheName" value="passwordRetryCache"/>
+
+        <!--注意：重要的事情说三次~~~~~~此处加密方式要与用户注册时的算法一致 -->
+        <!--注意：重要的事情说三次~~~~~~此处加密方式要与用户注册时的算法一致 -->
+        <!--注意：重要的事情说三次~~~~~~此处加密方式要与用户注册时的算法一致 -->
+        <!--以下三个配置告诉shiro将如何对用户传来的明文密码进行加密-->
+        <!--指定hash算法为MD5-->
+        <property name="hashAlgorithmName" value="md5"/>
+        <!--指定散列次数为1024次-->
+        <property name="hashIterations" value="1024"/>
+        <!--true指定Hash散列值使用Hex加密存. false表明hash散列值用用Base64-encoded存储-->
+        <property name="storedCredentialsHexEncoded" value="true"/>
+    </bean>
+
+    <!-- Realm实现 -->
+    <bean id="userRealm" class="com.zking.test.shiro.UserRealm">
+        <property name="credentialsMatcher" ref="credentialsMatcher"/>
+        <property name="userBiz" ref="userBiz"/>
+    </bean>
+
+    <!-- 安全管理器 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="userRealm"/>
+    </bean>
+
+    <!-- Shiro的Web过滤器 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <!--访问需要认证的地址时，没有认证跳转的地址，默认跳网站首页，然后经springmvc转到/WEB-INF/jsp/login.jsp-->
+        <property name="loginUrl" value="/"/>
+
+        <!-- 登录后，没有访问权限将跳转的地址 -->
+        <property name="unauthorizedUrl" value="/user/unauthorized"/>
+
+        <property name="filterChainDefinitions">
+            <!-- **表示匹配0个或多个路径 ,*表示匹配0个或多个字符串，?表示匹配一个字符 -->
+            <value>
+                /css/**               = anon
+                /images/**            = anon
+                /js/**                = anon
+                /                     = anon
+                /user/logout          = logout
+                /user/**              = anon
+                /userInfo/**          = authc
+                /dict/**              = authc
+                /console/**           = roles[admin]
+                /**                   = anon
+            </value>
+        </property>
+    </bean>
+
+    <!-- Shiro生命周期处理器-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+</beans>

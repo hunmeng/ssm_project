@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zking.ssm.mapper.CategoryMapper" >
+  <resultMap id="BaseResultMap" type="com.zking.ssm.model.Category" >
+    <constructor >
+      <idArg column="category_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="category_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+
+  <resultMap id="many2many" type="com.zking.ssm.model.Category">
+
+    <id column="category_id" property="categoryId"/>
+    <result column="category_name" property="categoryName"/>
+    <!-- 多对多的关系 -->
+    <!-- property: 指的是集合属性的值, ofType：指的是集合中元素的类型 -->
+    <collection property="news" ofType="com.zking.ssm.model.News">
+      <id column="news_id" property="newsId"/>
+      <result column="title" property="title"/>
+    </collection>
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    category_id, category_name
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_category
+    where category_id = #{categoryId,jdbcType=INTEGER}
+  </select>
+    <select id="listCategory" resultMap="many2many" parameterType="com.zking.ssm.model.Category">
+      SELECT n.news_id, n.title, c.category_id, c.category_name
+      FROM t_news n left outer join t_news_category nc on n.news_id = nc.nid left outer join t_category c on nc.cid = c.category_id
+      where c.category_id = #{categoryId,jdbcType=INTEGER}
+
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_category
+    where category_id = #{categoryId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.zking.ssm.model.Category" >
+    insert into t_category (category_id, category_name)
+    values (#{categoryId,jdbcType=INTEGER}, #{categoryName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.zking.ssm.model.Category" >
+    insert into t_category
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="categoryId != null" >
+        category_id,
+      </if>
+      <if test="categoryName != null" >
+        category_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="categoryId != null" >
+        #{categoryId,jdbcType=INTEGER},
+      </if>
+      <if test="categoryName != null" >
+        #{categoryName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.zking.ssm.model.Category" >
+    update t_category
+    <set >
+      <if test="categoryName != null" >
+        category_name = #{categoryName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where category_id = #{categoryId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.zking.ssm.model.Category" >
+    update t_category
+    set category_name = #{categoryName,jdbcType=VARCHAR}
+    where category_id = #{categoryId,jdbcType=INTEGER}
+  </update>
+</mapper>

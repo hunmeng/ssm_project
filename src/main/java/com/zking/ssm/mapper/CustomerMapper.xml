@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zking.ssm.mapper.CustomerMapper" >
+  <resultMap id="BaseResultMap" type="com.zking.ssm.model.Customer" >
+    <constructor >
+      <idArg column="customer_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="customer_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <resultMap id="row1" type="com.zking.ssm.model.Customer" >
+      <id column="customer_id" property="customerId" javaType="java.lang.Integer" />
+      <result column="customer_name" property="customerName" javaType="java.lang.String" />
+      <collection property="orders" ofType="com.zking.ssm.model.Order" >
+        <id column="order_id" property="orderId" javaType="java.lang.Integer" />
+        <result column="order_no" property="orderNo" javaType="java.lang.String" />
+        <result column="cid" property="cid" javaType="java.lang.Integer" />
+      </collection>
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    customer_id, customer_name
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_customer
+    where customer_id = #{customerId,jdbcType=INTEGER}
+  </select>
+  <select id="listCustomer" resultMap="row1" parameterType="com.zking.ssm.model.Customer">
+      SELECT c.*, o.*
+      FROM t_customer c LEFT OUTER JOIN t_order o ON c.customer_id = o.cid
+
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_customer
+    where customer_id = #{customerId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.zking.ssm.model.Customer" >
+    insert into t_customer (customer_id, customer_name)
+    values (#{customerId,jdbcType=INTEGER}, #{customerName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.zking.ssm.model.Customer" >
+    insert into t_customer
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="customerId != null" >
+        customer_id,
+      </if>
+      <if test="customerName != null" >
+        customer_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="customerId != null" >
+        #{customerId,jdbcType=INTEGER},
+      </if>
+      <if test="customerName != null" >
+        #{customerName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.zking.ssm.model.Customer" >
+    update t_customer
+    <set >
+      <if test="customerName != null" >
+        customer_name = #{customerName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where customer_id = #{customerId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.zking.ssm.model.Customer" >
+    update t_customer
+    set customer_name = #{customerName,jdbcType=VARCHAR}
+    where customer_id = #{customerId,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zking.ssm.mapper.BookMapper" >
+
+  <cache type="com.zking.com.zking.ssm.redis.RedisCache"
+          eviction="LRU"
+          flushInterval="6000000"
+          size="1024"
+          readOnly="false"
+  />
+
+  <resultMap id="BaseResultMap" type="com.zking.ssm.model.Book" >
+    <constructor >
+      <idArg column="book_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="book_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="price" jdbcType="REAL" javaType="java.lang.Float" />
+    </constructor>
+  </resultMap>
+
+  <resultMap id="list1" type="com.zking.ssm.model.Book" >
+      <id column="book_id" property="bookId" javaType="java.lang.Integer" />
+      <result column="book_name" property="bookName"  javaType="java.lang.String" />
+      <result column="price" property="price"  javaType="java.lang.Float" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    book_id, book_name, price
+  </sql>
+  <select id="selectByPrimaryKey"  resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_book
+    where book_id = #{bookId,jdbcType=INTEGER}
+  </select>
+  <select id="bookList" resultMap="list1" parameterType="com.zking.ssm.model.Book">
+    SELECT * FROM t_book WHERE 1=1
+    <if test="bookName !=null and bookName != ''">
+        AND book_name LIKE concat("%",#{bookName,jdbcType=VARCHAR},"%")
+    </if>
+
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from t_book
+    where book_id = #{bookId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.zking.ssm.model.Book" >
+    insert into t_book ( book_name, price
+      )
+    values ( #{bookName,jdbcType=VARCHAR}, #{price,jdbcType=REAL}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.zking.ssm.model.Book" >
+    insert into t_book
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="bookId != null" >
+        book_id,
+      </if>
+      <if test="bookName != null" >
+        book_name,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="bookId != null" >
+        #{bookId,jdbcType=INTEGER},
+      </if>
+      <if test="bookName != null" >
+        #{bookName,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=REAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.zking.ssm.model.Book" >
+    update t_book
+    <set >
+      <if test="bookName != null" >
+        book_name = #{bookName,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null" >
+        price = #{price,jdbcType=REAL},
+      </if>
+    </set>
+    where book_id = #{bookId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.zking.ssm.model.Book" >
+    update t_book
+    set book_name = #{bookName,jdbcType=VARCHAR},
+      price = #{price,jdbcType=REAL}
+    where book_id = #{bookId,jdbcType=INTEGER}
+  </update>
+</mapper>
